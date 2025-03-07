@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.binancewebsocket.mapper.BinanceAggTradeMapper">
+
+    <!-- ✅ AggTrade 데이터 저장 -->
+    <insert id="insertAggTrade" parameterType="com.example.binancewebsocket.dto.BinanceAggTradeDTO">
+        INSERT INTO binance_agg_trade (symbol, agg_trade_id, price, quantity, first_trade_id, last_trade_id, trade_time,
+                                       buyer_maker, created_at)
+        VALUES (#{symbol}, #{aggTradeId}, #{price}, #{quantity}, #{firstTradeId}, #{lastTradeId}, #{tradeTime},
+                #{buyerMaker}, NOW()) ON DUPLICATE KEY
+        UPDATE
+            price =
+        VALUES (price), quantity =
+        VALUES (quantity), trade_time =
+        VALUES (trade_time), buyer_maker =
+        VALUES (buyer_maker), created_at = NOW();
+    </insert>
+</mapper>

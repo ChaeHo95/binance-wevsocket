@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.binancewebsocket.mapper.BinanceTradeMapper">
+
+    <!-- ✅ Trade 데이터 저장 (선물 필드 추가) -->
+    <insert id="insertTrade">
+        INSERT INTO binance_trade (symbol, price, quantity, trade_time, buyer_maker)
+        VALUES (#{symbol}, #{price}, #{quantity}, #{tradeTime}, #{buyerMaker}) ON DUPLICATE KEY
+        UPDATE
+            price =
+        VALUES (price), quantity =
+        VALUES (quantity), buyer_maker =
+        VALUES (buyer_maker)
+    </insert>
+
+</mapper>

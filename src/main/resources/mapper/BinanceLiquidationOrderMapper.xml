@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.binancewebsocket.mapper.BinanceLiquidationOrderMapper">
+
+    <!-- 📌 강제 청산 주문 데이터 삽입 -->
+    <insert id="insertLiquidationOrder">
+        INSERT INTO binance_liquidation_orders (event_type, event_time, symbol, side, order_type, time_in_force,
+                                                original_quantity, price, average_price, order_status,
+                                                last_filled_quantity, total_filled_quantity, trade_time)
+        VALUES (#{eventType}, #{eventTime}, #{liquidation.symbol}, #{liquidation.side}, #{liquidation.orderType},
+                #{liquidation.timeInForce},
+                #{liquidation.originalQuantity}, #{liquidation.price}, #{liquidation.averagePrice},
+                #{liquidation.orderStatus},
+                #{liquidation.lastFilledQuantity}, #{liquidation.totalFilledQuantity}, #{liquidation.tradeTime})
+    </insert>
+</mapper>

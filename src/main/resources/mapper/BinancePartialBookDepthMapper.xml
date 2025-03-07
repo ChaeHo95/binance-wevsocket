@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.binancewebsocket.mapper.BinancePartialBookDepthMapper">
+
+    <!-- 📌 호가 데이터 삽입 -->
+    <insert id="insertPartialBookDepth">
+        INSERT INTO binance_partial_book_depth (transaction_time, event_type, event_time, symbol,
+                                                first_update_id, final_update_id, previous_update_id)
+        VALUES (#{transactionTime}, #{eventType}, #{eventTime}, #{symbol},
+                #{firstUpdateId}, #{finalUpdateId}, #{previousUpdateId});
+    </insert>
+
+    <insert id="insertOrderBookEntries">
+        INSERT INTO binance_order_book_entries (transaction_time, type, price, quantity)
+        VALUES
+        <foreach collection="bids" item="bid" separator=",">
+            (#{transactionTime}, 'BID', #{bid.price}, #{bid.quantity})
+        </foreach>,
+        <foreach collection="asks" item="ask" separator=",">
+            (#{transactionTime}, 'ASK', #{ask.price}, #{ask.quantity})
+        </foreach>
+    </insert>
+
+</mapper>

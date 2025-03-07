@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.binancewebsocket.mapper.BinanceKlineMapper">
+
+    <!-- ✅ Kline 데이터 저장 (선물 데이터 반영) -->
+    <insert id="insertKline" parameterType="com.example.binancewebsocket.dto.BinanceKlineDTO">
+        INSERT INTO binance_kline (symbol, open_time, close_time, open_price, close_price, high_price, low_price,
+                                   volume, trade_count)
+        VALUES (#{symbol}, #{openTime}, #{closeTime}, #{openPrice}, #{closePrice}, #{highPrice}, #{lowPrice}, #{volume},
+                #{tradeCount}) ON DUPLICATE KEY
+        UPDATE
+            close_time =
+        VALUES (close_time), open_price =
+        VALUES (open_price), close_price =
+        VALUES (close_price), high_price =
+        VALUES (high_price), low_price =
+        VALUES (low_price), volume =
+        VALUES (volume), trade_count =
+        VALUES (trade_count)
+    </insert>
+
+</mapper>

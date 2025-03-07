@@ -3,8 +3,8 @@
 <mapper namespace="com.example.binancewebsocket.mapper.BinanceTakerBuySellVolumeMapper">
 
     <insert id="insertTakerBuySellVolume" parameterType="com.example.binancewebsocket.dto.BinanceTakerBuySellVolumeDTO">
-        INSERT INTO binance_taker_buy_sell_volume (buy_sell_ratio, buy_volume, sell_volume, time_stamp)
-        VALUES (#{buySellRatio}, #{buyVolume}, #{sellVolume}, #{timestamp}) ON DUPLICATE KEY
+        INSERT INTO binance_taker_buy_sell_volume (symbol, buy_sell_ratio, buy_volume, sell_volume, time_stamp)
+        VALUES (#{symbol}, #{buySellRatio}, #{buyVolume}, #{sellVolume}, #{timestamp}) ON DUPLICATE KEY
         UPDATE
             buy_sell_ratio =
         VALUES (buy_sell_ratio), buy_volume =

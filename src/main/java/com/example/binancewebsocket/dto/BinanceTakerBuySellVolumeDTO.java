@@ -1,5 +1,6 @@
 package com.example.binancewebsocket.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,7 +14,11 @@ import java.math.BigInteger;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class BinanceTakerBuySellVolumeDTO {
+
+    @JsonProperty("symbol")  // JSON 필드명과 매핑
+    private String symbol;
 
     @JsonProperty("buySellRatio")  // JSON 필드명과 매핑
     private BigDecimal buySellRatio;

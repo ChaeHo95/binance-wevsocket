@@ -46,7 +46,9 @@ public class BinanceTakerBuySellVolumeService {
                     .bodyToMono(new ParameterizedTypeReference<List<BinanceTakerBuySellVolumeDTO>>() {
                     })  // 리스트 변환
                     .block();
-
+            for (BinanceTakerBuySellVolumeDTO dto : response) {
+                dto.setSymbol(symbol);
+            }
             if (response != null && !response.isEmpty()) {
                 response.forEach(mapper::insertTakerBuySellVolume);
                 logger.info("Successfully saved {} Taker Buy/Sell Volume records", response.size());

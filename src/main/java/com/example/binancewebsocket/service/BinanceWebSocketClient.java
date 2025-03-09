@@ -14,6 +14,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.net.URI;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 @Component
@@ -22,6 +24,8 @@ import java.util.concurrent.TimeUnit;
 public class BinanceWebSocketClient extends WebSocketClient {
 
     private static final Logger logger = LoggerFactory.getLogger(BinanceWebSocketClient.class);
+
+
     private final BinanceKlineService klineService;
     private final BinanceTickerService tickerService;
     private final BinanceTradeService tradeService;
@@ -36,6 +40,7 @@ public class BinanceWebSocketClient extends WebSocketClient {
     // ✅ 재연결 관련 변수
     private static final int MAX_RECONNECT_ATTEMPTS = 10;
     private static final long RECONNECT_DELAY = TimeUnit.SECONDS.toMillis(5);
+    private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
 
     @Value("${enable.binance.websocket}") // 기본값 false
@@ -65,17 +70,21 @@ public class BinanceWebSocketClient extends WebSocketClient {
     }
 
     /**
-     * ✅ WebSocket 상태 체크 및 자동 재연결 (1분마다 실행)
+     * ✅ 1분 주기로 WebSocket 상태를 체크하고, 닫혀 있으면 재연결.
+     * - @Scheduled가 동작하려면 @EnableScheduling 필요
+     * - 또한 @ConditionalOnProperty 설정에 의해 'enable.binance.scheduling=true' 여야 Bean이 등록됨
      */
-    @Scheduled(fixedRate = 1 * 60 * 1000)
+    @Scheduled(fixedRate = 60_000)  // 1분
     public synchronized void checkAndReconnect() {
-        logger.info("⚠️ WebSocket 작동 확인.");
+        logger.info("⚠️ WebSocket 작동 확인 (스케줄링 동작).");
+
+        // application.properties 에서 enable.binance.websocket=true 로 설정되어 있어야 true
         if (!enableWebSocket) {
-            logger.info("⚠ WebSocket 실행이 비활성화됨.");
-            return; // 실행하지 않음
+            logger.info("⚠ WebSocket 실행이 비활성화됨. (enableWebSocket=false)");
+            return;
         }
 
-
+        // 현재 WebSocket이 열려 있는지 확인
         if (!isWebSocketOpen()) {
             logger.warn("⚠️ WebSocket이 닫혀 있음. 재연결 시도...");
             reconnectWithDelay();
@@ -254,52 +263,90 @@ public class BinanceWebSocketClient extends WebSocketClient {
     }
 
 
+    /**
+     * 외부에서 최초로 재연결을 시작할 때 호출하는 메서드.
+     * attempt=0 으로 시작한다.
+     */
     private void reconnectWithDelay() {
-        for (int reconnectAttempts = 0; reconnectAttempts < MAX_RECONNECT_ATTEMPTS; reconnectAttempts++) {
+        reconnectWithDelay(0);
+    }
 
-            // 현재 WebSocket 연결 상태 로그
-            if (isWebSocketOpen()) {
-                logger.info("🔗 WebSocket이 현재 연결된 상태입니다.");
-                return; // 이미 연결되어 있으면 재연결 불필요
-            } else {
-                logger.warn("⚠️ WebSocket이 닫혀 있음. 재연결 시도...");
-            }
-
-            // 지수적으로 대기 시간 증가, 최대 30초 (30000ms)로 제한
-            long delay = RECONNECT_DELAY * (reconnectAttempts + 1);
-            delay = Math.min(delay, 30000);  // 최대 30초로 제한
-
-            // 재연결 시도 로그 출력
-            logger.info("⏳ WebSocket 재연결 시도 중... 시도 {} / {}. 대기 시간: {}ms", reconnectAttempts + 1, MAX_RECONNECT_ATTEMPTS, delay);
-
-            try {
-                // 인터럽트 상태 확인
-                if (Thread.currentThread().isInterrupted()) {
-                    logger.error("❌ 재연결 중 스레드가 인터럽트되었습니다. 작업을 중단합니다.");
-                    break;  // 인터럽트 상태이면 종료
-                }
-
-                // 지연 후 재연결 시도
-                Thread.sleep(delay);
-                reconnect(); // WebSocket 재연결
-
-                // 재연결 성공 여부 확인
-                if (isWebSocketOpen()) {
-                    logger.info("✅ WebSocket 재연결 성공! 시도 {} / {}", reconnectAttempts + 1, MAX_RECONNECT_ATTEMPTS);
-                    return; // 성공적으로 재연결 되었으면 종료
-                } else {
-                    logger.warn("⚠️ WebSocket이 아직 닫혀 있음. 다음 재연결 시도 준비...");
-                }
-
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();  // 인터럽트 상태 다시 설정
-                logger.error("❌ 재연결 중단됨: 스레드 인터럽트 예외 발생. 시도 {} / {}", reconnectAttempts + 1, MAX_RECONNECT_ATTEMPTS, e);
-                break; // InterruptedException 발생 시 루프 종료
-            }
+    /**
+     * 재귀적으로 재연결을 시도하는 메서드
+     *
+     * @param attempt 현재까지 재연결 시도 횟수
+     */
+    private void reconnectWithDelay(int attempt) {
+        // 이미 열려 있다면 재연결 불필요
+        if (isWebSocketOpen()) {
+            logger.info("🔗 WebSocket이 이미 열려 있음. 스케줄러 종료 처리.");
+            shutdownScheduler();
+            return;
         }
 
-        // 최대 재연결 시도 횟수를 초과한 경우 로그 남기기
-        logger.error("❌ 최대 재연결 시도 횟수 초과. WebSocket 연결 종료.");
+        // 최대 재연결 횟수를 초과
+        if (attempt >= MAX_RECONNECT_ATTEMPTS) {
+            logger.error("❌ 최대 재연결 시도 {}회를 초과. 더 이상 재시도하지 않음.", MAX_RECONNECT_ATTEMPTS);
+            shutdownScheduler();
+            return;
+        }
+
+        // 스케줄러가 null이거나 종료됐으면 새로 생성
+        if (scheduler == null || scheduler.isShutdown()) {
+            logger.info("⚙️ 스케줄러가 null 또는 종료됨. 새로 생성합니다.");
+            scheduler = Executors.newScheduledThreadPool(1);
+        }
+
+        // (attempt+1)에 따른 지연시간, 최대 30초 제한
+        long delay = RECONNECT_DELAY * (attempt + 1);
+        delay = Math.min(delay, TimeUnit.SECONDS.toMillis(30));
+
+        logger.warn("⚠️ WebSocket 닫힘. 재연결 {}/{}회 시도 예약 (대기: {}ms 후)",
+                attempt + 1, MAX_RECONNECT_ATTEMPTS, delay);
+
+        // 여기서부터 스케줄링 (delay 뒤 한 번 실행)
+        scheduler.schedule(() -> {
+            // 1) 스레드 인터럽트 체크
+            if (Thread.currentThread().isInterrupted()) {
+                logger.error("❌ 재연결 중 스레드가 인터럽트됨. 기존 스레드풀 종료 후 재생성.");
+                shutdownScheduler();  // 기존 스케줄러 종료
+
+                // 여전히 재연결을 계속 원한다면, 새 스레드풀 만들고 다시 시도
+                // (attempt를 그대로 넘겨서 이번 시도를 다시 한번 수행할 수도 있고,
+                //  attempt+1로 넘길 수도 있음. 여기서는 동일 시도 횟수로 다시 시도 예시)
+                reconnectWithDelay(attempt);
+                return;
+            }
+
+            // 2) 재연결 로직 시도
+            try {
+                reconnect(); // org.java_websocket.client.WebSocketClient의 reconnect()
+            } catch (Exception e) {
+                logger.error("❌ 재연결 시도 중 예외 발생: {}", e.getMessage(), e);
+            }
+
+            // 3) 재연결 성공 여부 확인
+            if (isWebSocketOpen()) {
+                logger.info("✅ WebSocket 재연결 성공! ({}차 시도). 스케줄러 종료 처리.", attempt + 1);
+                shutdownScheduler(); // 여기서 스케줄러 종료 (원한다면 유지 가능)
+            } else {
+                logger.warn("⚠️ 재연결 실패 ({}차). 다음 시도 예약...", attempt + 1);
+                reconnectWithDelay(attempt + 1); // 다음 시도
+            }
+
+        }, delay, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * 스케줄러 안전 종료
+     */
+    private synchronized void shutdownScheduler() {
+        if (scheduler != null && !scheduler.isShutdown()) {
+            logger.info("🛑 스케줄러를 종료합니다.");
+            scheduler.shutdown();
+            // shutdownNow()는 큐에 남은 작업을 즉시 중단하고, 현재 실행 중인 스레드에도 인터럽트를 걸어줍니다.
+            scheduler = null;  // 이후 재사용 시 새로 할당해야 함
+        }
     }
 
     /**

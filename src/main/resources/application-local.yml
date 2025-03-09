@@ -61,7 +61,8 @@ mybatis:
 dotenv:
   enabled: true
 
-symbols: XRPUSDT
+symbols:
+  - XRPUSDT
 
 enable:
   binance:

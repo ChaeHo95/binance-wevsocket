@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.binancewebsocket.mapper.BinanceOpenInterestStatisticsMapper">
+
+    <insert id="insertOpenInterestStatistics"
+            parameterType="com.example.binancewebsocket.dto.BinanceOpenInterestStatisticsDto">
+        INSERT INTO binance_open_interest_statistics (symbol, sum_open_interest, sum_open_interest_value, time_stamp)
+        VALUES (#{symbol}, #{sumOpenInterest}, #{sumOpenInterestValue}, #{timeStamp}) ON DUPLICATE KEY
+        UPDATE
+            sum_open_interest =
+        VALUES (sum_open_interest), sum_open_interest_value =
+        VALUES (sum_open_interest_value);
+    </insert>
+</mapper>

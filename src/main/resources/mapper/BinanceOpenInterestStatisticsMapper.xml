@@ -5,7 +5,7 @@
     <insert id="insertOpenInterestStatistics"
             parameterType="com.example.binancewebsocket.dto.BinanceOpenInterestStatisticsDto">
         INSERT INTO binance_open_interest_statistics (symbol, sum_open_interest, sum_open_interest_value, time_stamp)
-        VALUES (#{symbol}, #{sumOpenInterest}, #{sumOpenInterestValue}, #{timeStamp}) ON DUPLICATE KEY
+        VALUES (#{symbol}, #{sumOpenInterest}, #{sumOpenInterestValue}, #{timestamp}) ON DUPLICATE KEY
         UPDATE
             sum_open_interest =
         VALUES (sum_open_interest), sum_open_interest_value =

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class BinanceFundingRateService {
 
-    private static final Logger logger = LoggerFactory.getLogger(BinanceFundingRateService.class);
+    private Logger logger = LoggerFactory.getLogger(BinanceFundingRateService.class);
     private final BinanceFundingRateMapper fundingRateMapper;
 
     public BinanceFundingRateService(BinanceFundingRateMapper fundingRateMapper) {

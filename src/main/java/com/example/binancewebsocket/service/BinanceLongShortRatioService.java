@@ -18,7 +18,7 @@ import java.util.List;
 @Service
 public class BinanceLongShortRatioService {
 
-    private static final Logger logger = LoggerFactory.getLogger(BinanceLongShortRatioService.class);
+    private Logger logger = LoggerFactory.getLogger(BinanceLongShortRatioService.class);
     private final BinanceLongShortRatioMapper mapper;
     private final WebClient webClient = WebClient.create();
     private BinanceConfig binanceConfig;

@@ -18,7 +18,7 @@ import java.util.List;
 @Service
 public class BinanceOpenInterestStatisticsService {
 
-    private static final Logger logger = LoggerFactory.getLogger(BinanceOpenInterestStatisticsService.class);
+    private Logger logger = LoggerFactory.getLogger(BinanceOpenInterestStatisticsService.class);
     private final BinanceOpenInterestStatisticsMapper mapper;
     private final WebClient webClient = WebClient.create();
     private BinanceConfig binanceConfig;

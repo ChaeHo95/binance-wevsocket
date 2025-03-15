@@ -18,7 +18,7 @@ import java.util.List;
 @Service
 public class BinanceTakerBuySellVolumeService {
 
-    private static final Logger logger = LoggerFactory.getLogger(BinanceTakerBuySellVolumeService.class);
+    private Logger logger = LoggerFactory.getLogger(BinanceTakerBuySellVolumeService.class);
     private final BinanceTakerBuySellVolumeMapper mapper;
     private final WebClient webClient = WebClient.create();
     private BinanceConfig binanceConfig;

@@ -13,7 +13,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 @Service
 public class BinanceOpenInterestService {
 
-    private static final Logger logger = LoggerFactory.getLogger(BinanceOpenInterestService.class);
+    private Logger logger = LoggerFactory.getLogger(BinanceOpenInterestService.class);
     private final BinanceOpenInterestMapper mapper;
     private final WebClient webClient = WebClient.create();
     private BinanceConfig binanceConfig;

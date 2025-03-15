@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 public class BinanceAggTradeService {
 
     private final BinanceAggTradeMapper aggTradeMapper;
-    private static final Logger logger = LoggerFactory.getLogger(BinanceAggTradeService.class);
+    private Logger logger = LoggerFactory.getLogger(BinanceAggTradeService.class);
 
     public BinanceAggTradeService(BinanceAggTradeMapper aggTradeMapper) {
         this.aggTradeMapper = aggTradeMapper;

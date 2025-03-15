@@ -17,7 +17,7 @@ import java.util.Locale;
 @Service
 public class BinanceWebSocketService {
 
-    private static final Logger logger = LoggerFactory.getLogger(BinanceWebSocketService.class);
+    private Logger logger = LoggerFactory.getLogger(BinanceWebSocketService.class);
 
     @Autowired
     private BinanceConfig binanceConfig;
@@ -97,7 +97,7 @@ public class BinanceWebSocketService {
 
             List<String> newSymbols = symbolMapper.selectAllSymbols();
             this.symbols = newSymbols;
-            
+
             List<String> markets = symbols.stream()
                     .map(v -> v.toLowerCase(Locale.ROOT))
                     .toList(); // 필요한 심볼 추가 가능

@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 @ConditionalOnProperty(name = "enable.binance.scheduling", havingValue = "true", matchIfMissing = false)
 public class BinanceWebSocketClient extends WebSocketClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(BinanceWebSocketClient.class);
+    private Logger logger = LoggerFactory.getLogger(BinanceWebSocketClient.class);
 
 
     private final BinanceKlineService klineService;

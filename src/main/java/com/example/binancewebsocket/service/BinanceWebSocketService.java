@@ -1,12 +1,13 @@
 package com.example.binancewebsocket.service;
 
 import com.example.binancewebsocket.config.BinanceConfig;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.binancewebsocket.mapper.SymbolMapper;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -18,46 +19,33 @@ public class BinanceWebSocketService {
 
     private static final Logger logger = LoggerFactory.getLogger(BinanceWebSocketService.class);
 
+    @Autowired
     private BinanceConfig binanceConfig;
+    @Autowired
     private BinanceKlineService binanceKlineService;
+    @Autowired
     private BinanceTickerService binanceTickerService;
+    @Autowired
     private BinanceTradeService binanceTradeService;
+    @Autowired
     private BinanceAggTradeService binanceAggTradeService;
+    @Autowired
     private BinanceFundingRateService binanceFundingRateService;
-    private final BinanceLiquidationOrderService liquidationOrderService;
-    private final BinancePartialBookDepthService partialBookDepthService;
+    @Autowired
+    private BinanceLiquidationOrderService liquidationOrderService;
+    @Autowired
+    private BinancePartialBookDepthService partialBookDepthService;
 
-    private ObjectMapper objectMapper;
+    @Autowired
+    private SymbolMapper symbolMapper;
+
     private BinanceWebSocketClient webSocketClient;
 
-    @Value("${symbols}")
     private List<String> symbols;
 
     @Value("${enable.binance.websocket:false}") // 기본값 false
     private boolean enableWebSocket;
 
-    @Autowired
-    public BinanceWebSocketService(
-            BinanceConfig binanceConfig,
-            BinanceKlineService binanceKlineService,
-            BinanceTickerService binanceTickerService,
-            BinanceTradeService binanceTradeService,
-            BinanceAggTradeService binanceAggTradeService,
-            BinanceFundingRateService binanceFundingRateService,
-            BinanceLiquidationOrderService liquidationOrderService,
-            BinancePartialBookDepthService partialBookDepthService,
-            ObjectMapper objectMapper
-    ) {
-        this.binanceConfig = binanceConfig;
-        this.binanceKlineService = binanceKlineService;
-        this.binanceTickerService = binanceTickerService;
-        this.binanceTradeService = binanceTradeService;
-        this.binanceAggTradeService = binanceAggTradeService;
-        this.binanceFundingRateService = binanceFundingRateService;
-        this.liquidationOrderService = liquidationOrderService;
-        this.partialBookDepthService = partialBookDepthService;
-        this.objectMapper = objectMapper;
-    }
 
     @PostConstruct
     public void initWebSocket() {
@@ -67,6 +55,12 @@ public class BinanceWebSocketService {
         }
 
         try {
+
+            if (symbols.isEmpty()) {
+                List<String> newSymbols = symbolMapper.selectAllSymbols();
+                this.symbols = newSymbols;
+            }
+
             // ✅ 구독할 심볼 리스트 설정
             List<String> markets = symbols.stream()
                     .map(v -> v.toLowerCase(Locale.ROOT))
@@ -80,13 +74,50 @@ public class BinanceWebSocketService {
             webSocketClient = new BinanceWebSocketClient(
                     webSocketUri, binanceKlineService, binanceTickerService,
                     binanceTradeService, binanceFundingRateService, binanceAggTradeService,
-                    liquidationOrderService, partialBookDepthService, objectMapper
+                    liquidationOrderService, partialBookDepthService
             );
             webSocketClient.connect();
 
             logger.info("✅ Binance WebSocket 연결 성공!");
         } catch (Exception e) {
             throw new RuntimeException("❌ WebSocket 초기화 실패: ", e);
+        }
+    }
+
+    /**
+     * 매일 자정(00시)에 DB에서 symbols 값을 업데이트합니다.
+     */
+    @Scheduled(cron = "0 0 0 * * *")
+    public void updateSymbols() {
+        try {
+
+            if (webSocketClient.isWebSocketOpen()) {
+                webSocketClient.isWebSocketClosed();
+            }
+
+            List<String> newSymbols = symbolMapper.selectAllSymbols();
+            this.symbols = newSymbols;
+            
+            List<String> markets = symbols.stream()
+                    .map(v -> v.toLowerCase(Locale.ROOT))
+                    .toList(); // 필요한 심볼 추가 가능
+
+            // ✅ 동적으로 WebSocket URL 생성
+            String webSocketUrl = binanceConfig.getFuturesWebSocketUrl(markets);
+
+            // ✅ WebSocket 클라이언트 생성 및 연결
+            URI webSocketUri = new URI(webSocketUrl);
+            webSocketClient = new BinanceWebSocketClient(
+                    webSocketUri, binanceKlineService, binanceTickerService,
+                    binanceTradeService, binanceFundingRateService, binanceAggTradeService,
+                    liquidationOrderService, partialBookDepthService
+            );
+            webSocketClient.connect();
+
+            logger.info("Symbols updated from DB: {}", newSymbols);
+            // 필요 시, WebSocket 연결 재설정 로직도 추가 가능
+        } catch (Exception e) {
+            logger.error("Symbols 업데이트 실패: ", e);
         }
     }
 }

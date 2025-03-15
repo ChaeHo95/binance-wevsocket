@@ -14,6 +14,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.net.URI;
+import java.time.LocalTime;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -35,7 +36,7 @@ public class BinanceWebSocketClient extends WebSocketClient {
     private final BinancePartialBookDepthService partialBookDepthService;
 
 
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     // ✅ 재연결 관련 변수
     private static final int MAX_RECONNECT_ATTEMPTS = 10;
@@ -56,15 +57,14 @@ public class BinanceWebSocketClient extends WebSocketClient {
                                   BinanceFundingRateService fundingRateService,
                                   BinanceAggTradeService aggTradeService,
                                   BinanceLiquidationOrderService liquidationOrderService,
-                                  BinancePartialBookDepthService partialBookDepthService,
-                                  ObjectMapper objectMapper) {
+                                  BinancePartialBookDepthService partialBookDepthService
+    ) {
         super(serverUri);
         this.klineService = klineService;
         this.tickerService = tickerService;
         this.tradeService = tradeService;
         this.fundingRateService = fundingRateService;
         this.aggTradeService = aggTradeService;
-        this.objectMapper = objectMapper;
         this.liquidationOrderService = liquidationOrderService;
         this.partialBookDepthService = partialBookDepthService;
     }
@@ -76,6 +76,13 @@ public class BinanceWebSocketClient extends WebSocketClient {
      */
     @Scheduled(fixedRate = 60_000)  // 1분
     public synchronized void checkAndReconnect() {
+        // 현재 시간이 00:00 ~ 00:05인 경우 스킵 (서버의 로컬 시간 기준)
+        LocalTime now = LocalTime.now();
+        if (now.getHour() == 0 && now.getMinute() == 0) {
+            logger.info("현재 시간이 00:00 ~ 00:05이므로 checkAndReconnect 실행을 건너뜁니다.");
+            return;
+        }
+
         logger.info("⚠️ WebSocket 작동 확인 (스케줄링 동작).");
 
         // application.properties 에서 enable.binance.websocket=true 로 설정되어 있어야 true

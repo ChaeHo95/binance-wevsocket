@@ -61,8 +61,6 @@ mybatis:
 dotenv:
   enabled: true
 
-symbols: XRPUSDT
-
 enable:
   binance:
     websocket: true

@@ -11,8 +11,6 @@ import java.math.BigInteger;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BinanceOpenInterestStatisticsDto {
-
-    private BigInteger id;
     private String symbol;
     private BigDecimal sumOpenInterest;
     private BigDecimal sumOpenInterestValue;

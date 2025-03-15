@@ -3,8 +3,8 @@
 <mapper namespace="com.example.binancewebsocket.mapper.BinanceOpenInterestMapper">
 
     <insert id="insertOpenInterest" parameterType="com.example.binancewebsocket.dto.BinanceOpenInterestDto">
-        INSERT INTO binance_open_interest (symbol, open_interest, api_timestamp)
-        VALUES (#{symbol}, #{openInterest}, #{timeStamp}) ON DUPLICATE KEY
+        INSERT INTO binance_open_interest (symbol, open_interest, time_stamp)
+        VALUES (#{symbol}, #{openInterest}, #{time}) ON DUPLICATE KEY
         UPDATE
             open_interest = IF(VALUES (open_interest) != open_interest, VALUES (open_interest), open_interest);
     </insert>

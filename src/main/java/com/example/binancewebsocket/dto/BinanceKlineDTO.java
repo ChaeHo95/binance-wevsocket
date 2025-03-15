@@ -28,6 +28,7 @@ public class BinanceKlineDTO {
     ; // ✅ 내부 객체로 매핑
 
     @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class KlineData {
         @JsonProperty("t")
         private BigInteger openTime; // 캔들 시작 시간

@@ -17,10 +17,11 @@ import java.util.Locale;
 @Service
 public class BinanceWebSocketService {
 
-    private Logger logger = LoggerFactory.getLogger(BinanceWebSocketService.class);
+    private static final Logger logger = LoggerFactory.getLogger(BinanceWebSocketService.class);
 
     @Autowired
     private BinanceConfig binanceConfig;
+
     @Autowired
     private BinanceKlineService binanceKlineService;
     @Autowired
@@ -55,21 +56,28 @@ public class BinanceWebSocketService {
         }
 
         try {
+            logger.info("Binance WebSocket 초기화 시작.");
 
-            if (symbols.isEmpty()) {
+            // symbols 리스트가 null이거나 비어 있으면 DB에서 조회
+            if (this.symbols == null || this.symbols.isEmpty()) {
+                logger.info("symbols 리스트가 null이거나 비어 있습니다. DB에서 symbols를 조회합니다.");
                 List<String> newSymbols = symbolMapper.selectAllSymbols();
                 this.symbols = newSymbols;
+                logger.info("DB에서 조회한 symbols: {}", newSymbols);
+            } else {
+                logger.info("기존 symbols 값 사용: {}", symbols);
             }
 
-            // ✅ 구독할 심볼 리스트 설정
+            // 모든 심볼을 소문자로 변환하여 markets 리스트 구성
             List<String> markets = symbols.stream()
                     .map(v -> v.toLowerCase(Locale.ROOT))
-                    .toList(); // 필요한 심볼 추가 가능
+                    .toList();
 
-            // ✅ 동적으로 WebSocket URL 생성
+            // BinanceConfig를 이용해 동적으로 WebSocket URL 생성
             String webSocketUrl = binanceConfig.getFuturesWebSocketUrl(markets);
+            logger.info("생성된 WebSocket URL: {}", webSocketUrl);
 
-            // ✅ WebSocket 클라이언트 생성 및 연결
+            // WebSocket 클라이언트 생성 및 연결
             URI webSocketUri = new URI(webSocketUrl);
             webSocketClient = new BinanceWebSocketClient(
                     webSocketUri, binanceKlineService, binanceTickerService,
@@ -78,34 +86,42 @@ public class BinanceWebSocketService {
             );
             webSocketClient.connect();
 
-            logger.info("✅ Binance WebSocket 연결 성공!");
+            logger.info("✅ Binance WebSocket 연결 성공! 사용 symbols: {}", symbols);
         } catch (Exception e) {
+            logger.error("❌ WebSocket 초기화 실패: ", e);
             throw new RuntimeException("❌ WebSocket 초기화 실패: ", e);
         }
     }
 
     /**
-     * 매일 자정(00시)에 DB에서 symbols 값을 업데이트합니다.
+     * 매일 자정(00시)에 DB에서 symbols 값을 업데이트하고 WebSocket을 재연결합니다.
      */
     @Scheduled(cron = "0 0 0 * * *")
     public void updateSymbols() {
         try {
+            logger.info("Symbols 업데이트 작업 시작.");
 
-            if (webSocketClient.isWebSocketOpen()) {
-                webSocketClient.isWebSocketClosed();
-            }
-
+            // 새 symbols 값 조회
             List<String> newSymbols = symbolMapper.selectAllSymbols();
+            logger.info("DB에서 새로 조회한 symbols: {}", newSymbols);
             this.symbols = newSymbols;
 
+            // 기존 WebSocket 연결 상태 확인 및 종료 처리
+            if (webSocketClient != null && webSocketClient.isWebSocketOpen()) {
+                logger.info("기존 WebSocket 연결이 열려 있습니다. 재연결을 위해 기존 연결을 종료합니다.");
+                webSocketClient.close();
+            }
+
+            // 새 심볼 값으로 markets 구성
             List<String> markets = symbols.stream()
                     .map(v -> v.toLowerCase(Locale.ROOT))
-                    .toList(); // 필요한 심볼 추가 가능
+                    .toList();
 
-            // ✅ 동적으로 WebSocket URL 생성
+            // 동적으로 WebSocket URL 생성
             String webSocketUrl = binanceConfig.getFuturesWebSocketUrl(markets);
+            logger.info("업데이트된 WebSocket URL: {}", webSocketUrl);
 
-            // ✅ WebSocket 클라이언트 생성 및 연결
+            // 새 WebSocket 클라이언트 생성 및 연결
             URI webSocketUri = new URI(webSocketUrl);
             webSocketClient = new BinanceWebSocketClient(
                     webSocketUri, binanceKlineService, binanceTickerService,
@@ -114,8 +130,7 @@ public class BinanceWebSocketService {
             );
             webSocketClient.connect();
 
-            logger.info("Symbols updated from DB: {}", newSymbols);
-            // 필요 시, WebSocket 연결 재설정 로직도 추가 가능
+            logger.info("✅ Symbols 업데이트 및 WebSocket 재연결 완료: {}", newSymbols);
         } catch (Exception e) {
             logger.error("Symbols 업데이트 실패: ", e);
         }

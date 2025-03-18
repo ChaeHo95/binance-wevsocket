@@ -7,6 +7,8 @@ import org.apache.ibatis.annotations.Mapper;
 public interface BinanceKlineMapper {
 
     // ✅ Kline 데이터 저장
-    void insertKline(BinanceKlineDTO kline);
+    void insertKline5m(BinanceKlineDTO kline);
+
+    void insertKline1h(BinanceKlineDTO kline);
 
 }

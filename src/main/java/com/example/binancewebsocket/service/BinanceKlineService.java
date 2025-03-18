@@ -17,12 +17,21 @@ public class BinanceKlineService {
     /**
      * 📌 캔들 데이터 저장
      */
-    public void saveKline(BinanceKlineDTO klineDTO) {
+    public void saveKline5m(BinanceKlineDTO klineDTO) {
         try {
-            binanceKlineMapper.insertKline(klineDTO);
-            logger.debug("✅ Kline 데이터 저장 완료: {}", klineDTO);
+            binanceKlineMapper.insertKline5m(klineDTO);
+            logger.debug("✅ Kline 5m 데이터 저장 완료: {}", klineDTO);
         } catch (Exception e) {
-            logger.error("❌ Kline 데이터 저장 실패: {}", e.getMessage());
+            logger.error("❌ Kline 5m 데이터 저장 실패: {}", e.getMessage());
+        }
+    }
+
+    public void saveKline1h(BinanceKlineDTO klineDTO) {
+        try {
+            binanceKlineMapper.insertKline1h(klineDTO);
+            logger.debug("✅ Kline 1h 데이터 저장 완료: {}", klineDTO);
+        } catch (Exception e) {
+            logger.error("❌ Kline 1h 데이터 저장 실패: {}", e.getMessage());
         }
     }
 }

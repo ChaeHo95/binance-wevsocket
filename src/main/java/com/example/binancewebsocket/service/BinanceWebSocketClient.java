@@ -133,8 +133,10 @@ public class BinanceWebSocketClient extends WebSocketClient {
 
             logger.info("📩 WebSocket 메시지 수신 [{}]: {}", stream, data.toString());
 
-            if (stream.contains("@kline")) {
-                handleKlineMessage(data);
+            if (stream.contains("@kline_5m")) {
+                handleKline5mMessage(data);
+            } else if (stream.contains("@kline_1h")) {
+                handleKline1hMessage(data);
             } else if (stream.contains("@ticker")) {
                 handleTickerMessage(data);
             } else if (stream.contains("@trade")) {
@@ -184,17 +186,32 @@ public class BinanceWebSocketClient extends WebSocketClient {
     }
 
     /**
-     * ✅ Kline (캔들) 데이터 저장
+     * ✅ Kline (캔들) 5분 단위 데이터 저장
      */
-    private void handleKlineMessage(JsonNode data) {
+    private void handleKline5mMessage(JsonNode data) {
         try {
             BinanceKlineDTO klineDTO = objectMapper.treeToValue(data, BinanceKlineDTO.class);
             if (klineDTO.getIsKlineClosed()) {
-                klineService.saveKline(klineDTO);
-                logger.info("📊 Kline 저장됨: {}", klineDTO);
+                klineService.saveKline5m(klineDTO);
+                logger.info("📊 Kline 5m 저장됨: {}", klineDTO);
             }
         } catch (Exception e) {
-            logger.error("❌ Kline 저장 오류: ", e);
+            logger.error("❌ Kline 5m 저장 오류: ", e);
+        }
+    }
+
+    /**
+     * ✅ Kline (캔들) 1시간 단위 데이터 저장
+     */
+    private void handleKline1hMessage(JsonNode data) {
+        try {
+            BinanceKlineDTO klineDTO = objectMapper.treeToValue(data, BinanceKlineDTO.class);
+            if (klineDTO.getIsKlineClosed()) {
+                klineService.saveKline1h(klineDTO);
+                logger.info("📊 Kline 1h 저장됨: {}", klineDTO);
+            }
+        } catch (Exception e) {
+            logger.error("❌ Kline 1h 저장 오류: ", e);
         }
     }
 

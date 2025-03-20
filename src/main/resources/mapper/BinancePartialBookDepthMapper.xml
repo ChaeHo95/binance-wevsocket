@@ -7,7 +7,15 @@
         INSERT INTO binance_partial_book_depth (transaction_time, event_type, event_time, symbol,
                                                 first_update_id, final_update_id, previous_update_id)
         VALUES (#{transactionTime}, #{eventType}, #{eventTime}, #{symbol},
-                #{firstUpdateId}, #{finalUpdateId}, #{previousUpdateId});
+                #{firstUpdateId}, #{finalUpdateId}, #{previousUpdateId}) ON DUPLICATE KEY
+        UPDATE
+            event_type =
+        VALUES (event_type), event_time =
+        VALUES (event_time), symbol =
+        VALUES (symbol), first_update_id =
+        VALUES (first_update_id), final_update_id =
+        VALUES (final_update_id), previous_update_id =
+        VALUES (previous_update_id);
     </insert>
 
     <insert id="insertOrderBookEntries">

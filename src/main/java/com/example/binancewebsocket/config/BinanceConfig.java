@@ -76,7 +76,7 @@ public class BinanceConfig {
                         market + "@trade",     // ✅ 선물 개별 거래 정보
                         market + "@aggTrade",      // ✅ 선물 집계 거래 정보
                         market + "@markPrice",     // ✅ 선물 시장 가격 (펀딩비 포함)
-                        market + "@kline_1h",      // ✅ 1시간봉 캔들 데이터
+//                        market + "@kline_1h",      // ✅ 1시간봉 캔들 데이터
                         market + "@kline_5m",      // ✅ 5분봉 캔들 데이터
                         market + "@ticker",        // ✅ 24시간 티커 데이터
                         market + "@forceOrder",    // ✅ 강제 청산 정보

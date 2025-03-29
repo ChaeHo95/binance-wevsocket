@@ -22,7 +22,7 @@ public class BinanceTradeService {
     public void saveTrade(BinanceTradeDTO tradeDTO) {
         try {
             binanceTradeMapper.insertTrade(tradeDTO);
-            logger.debug("✅ Trade 데이터 저장 완료: {}", tradeDTO);
+            logger.debug("✅ Trade 데이터 저장 완료");
         } catch (Exception e) {
             logger.error("❌ Trade 데이터 저장 실패: {}", e.getMessage());
         }

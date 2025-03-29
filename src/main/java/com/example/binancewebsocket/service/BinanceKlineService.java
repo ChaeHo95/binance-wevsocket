@@ -20,7 +20,7 @@ public class BinanceKlineService {
     public void saveKline5m(BinanceKlineDTO klineDTO) {
         try {
             binanceKlineMapper.insertKline5m(klineDTO);
-            logger.debug("✅ Kline 5m 데이터 저장 완료: {}", klineDTO);
+            logger.debug("✅ Kline 5m 데이터 저장 완료");
         } catch (Exception e) {
             logger.error("❌ Kline 5m 데이터 저장 실패: {}", e.getMessage());
         }
@@ -29,7 +29,7 @@ public class BinanceKlineService {
     public void saveKline1h(BinanceKlineDTO klineDTO) {
         try {
             binanceKlineMapper.insertKline1h(klineDTO);
-            logger.debug("✅ Kline 1h 데이터 저장 완료: {}", klineDTO);
+            logger.debug("✅ Kline 1h 데이터 저장 완료");
         } catch (Exception e) {
             logger.error("❌ Kline 1h 데이터 저장 실패: {}", e.getMessage());
         }

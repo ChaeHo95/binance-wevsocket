@@ -32,7 +32,7 @@ public class BinancePartialBookDepthService {
                 binancePartialBookDepthMapper.insertOrderBookEntries(transactionTime, bookDepth.getBids(), bookDepth.getAsks());
             }
 
-            logger.debug("📊 호가 데이터 저장 완료 (transactionTime={}): {}", transactionTime, bookDepth);
+            logger.debug("📊 호가 데이터 저장 완료 (transactionTime={})", transactionTime);
         } catch (Exception e) {
             logger.error("❌ 호가 데이터 저장 오류: ", e);
         }

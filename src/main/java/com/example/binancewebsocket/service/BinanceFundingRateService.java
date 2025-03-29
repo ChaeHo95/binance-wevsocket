@@ -22,7 +22,7 @@ public class BinanceFundingRateService {
     public void saveFundingRate(BinanceFundingRateDTO fundingRateDTO) {
         try {
             fundingRateMapper.insertFundingRate(fundingRateDTO);
-            logger.debug("📊 펀딩 비율 저장됨: {}", fundingRateDTO);
+            logger.debug("📊 펀딩 비율 저장됨");
         } catch (Exception e) {
             logger.error("❌ 펀딩 비율 저장 오류: ", e);
         }

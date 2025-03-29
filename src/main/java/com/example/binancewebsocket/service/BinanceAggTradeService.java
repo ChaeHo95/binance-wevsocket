@@ -22,7 +22,7 @@ public class BinanceAggTradeService {
     public void saveAggTrade(BinanceAggTradeDTO aggTradeDTO) {
         try {
             aggTradeMapper.insertAggTrade(aggTradeDTO);
-            logger.debug("📊 Aggregate Trade 저장됨: {}", aggTradeDTO);
+            logger.debug("📊 Aggregate Trade 저장됨");
         } catch (Exception e) {
             logger.error("❌ Aggregate Trade 저장 오류: ", e);
         }

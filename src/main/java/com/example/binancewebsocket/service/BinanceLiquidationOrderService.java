@@ -22,7 +22,7 @@ public class BinanceLiquidationOrderService {
     public void saveLiquidationOrder(BinanceLiquidationOrderDTO liquidationOrderDTO) {
         try {
             binanceLiquidationOrderMapper.insertLiquidationOrder(liquidationOrderDTO);
-            logger.debug("✅ 강제 청산 주문 저장 완료: {}", liquidationOrderDTO);
+            logger.debug("✅ 강제 청산 주문 저장 완료");
         } catch (Exception e) {
             logger.error("❌ 강제 청산 주문 저장 실패: {}", e.getMessage());
         }

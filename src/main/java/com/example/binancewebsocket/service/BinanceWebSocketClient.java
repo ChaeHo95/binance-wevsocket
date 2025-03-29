@@ -131,7 +131,7 @@ public class BinanceWebSocketClient extends WebSocketClient {
                 return;
             }
 
-            logger.info("📩 WebSocket 메시지 수신 [{}]: {}", stream, data.toString());
+            logger.info("📩 WebSocket 메시지 수신 [{}]:", stream);
 
             if (stream.contains("@kline_5m")) {
                 handleKline5mMessage(data);
@@ -150,7 +150,7 @@ public class BinanceWebSocketClient extends WebSocketClient {
             } else if (stream.contains("@depth")) {
                 handlePartialBookDepthMessage(data);
             } else {
-                logger.warn("⚠️ 알 수 없는 데이터 수신: {}", stream);
+                logger.warn("⚠️ 알 수 없는 데이터 수신: ");
             }
         } catch (Exception e) {
             logger.error("❌ WebSocket 메시지 처리 오류: ", e);
@@ -179,7 +179,7 @@ public class BinanceWebSocketClient extends WebSocketClient {
         try {
             BinancePartialBookDepthDTO partialBookDepth = objectMapper.treeToValue(data, BinancePartialBookDepthDTO.class);
             partialBookDepthService.savePartialBookDepth(partialBookDepth);
-            logger.info("📊 호가 데이터 저장됨: {}", partialBookDepth);
+            logger.info("📊 호가 데이터 저장됨");
         } catch (Exception e) {
             logger.error("❌ 호가 데이터 저장 오류: ", e);
         }
@@ -193,7 +193,7 @@ public class BinanceWebSocketClient extends WebSocketClient {
             BinanceKlineDTO klineDTO = objectMapper.treeToValue(data, BinanceKlineDTO.class);
             if (klineDTO.getIsKlineClosed()) {
                 klineService.saveKline5m(klineDTO);
-                logger.info("📊 Kline 5m 저장됨: {}", klineDTO);
+                logger.info("📊 Kline 5m 저장됨");
             }
         } catch (Exception e) {
             logger.error("❌ Kline 5m 저장 오류: ", e);
@@ -208,7 +208,7 @@ public class BinanceWebSocketClient extends WebSocketClient {
             BinanceKlineDTO klineDTO = objectMapper.treeToValue(data, BinanceKlineDTO.class);
             if (klineDTO.getIsKlineClosed()) {
                 klineService.saveKline1h(klineDTO);
-                logger.info("📊 Kline 1h 저장됨: {}", klineDTO);
+                logger.info("📊 Kline 1h 저장됨");
             }
         } catch (Exception e) {
             logger.error("❌ Kline 1h 저장 오류: ", e);
@@ -222,7 +222,7 @@ public class BinanceWebSocketClient extends WebSocketClient {
         try {
             BinanceTickerDTO tickerDTO = objectMapper.treeToValue(data, BinanceTickerDTO.class);
             tickerService.saveTicker(tickerDTO);
-            logger.info("📈 Ticker 저장됨: {}", tickerDTO);
+            logger.info("📈 Ticker 저장됨");
         } catch (Exception e) {
             logger.error("❌ Ticker 저장 오류: ", e);
         }
@@ -235,7 +235,7 @@ public class BinanceWebSocketClient extends WebSocketClient {
         try {
             BinanceTradeDTO tradeDTO = objectMapper.treeToValue(data, BinanceTradeDTO.class);
             tradeService.saveTrade(tradeDTO);
-            logger.info("💹 Trade 저장됨: {}", tradeDTO);
+            logger.info("💹 Trade 저장됨");
         } catch (Exception e) {
             logger.error("❌ Trade 저장 오류: ", e);
         }
@@ -248,7 +248,7 @@ public class BinanceWebSocketClient extends WebSocketClient {
         try {
             BinanceAggTradeDTO aggTradeDTO = objectMapper.treeToValue(data, BinanceAggTradeDTO.class);
             aggTradeService.saveAggTrade(aggTradeDTO);
-            logger.info("📦 Aggregate Trade 저장됨: {}", aggTradeDTO);
+            logger.info("📦 Aggregate Trade 저장됨");
         } catch (Exception e) {
             logger.error("❌ Aggregate Trade 저장 오류: ", e);
         }
@@ -261,7 +261,7 @@ public class BinanceWebSocketClient extends WebSocketClient {
         try {
             BinanceFundingRateDTO fundingRateDTO = objectMapper.treeToValue(data, BinanceFundingRateDTO.class);
             fundingRateService.saveFundingRate(fundingRateDTO);
-            logger.info("🔄 Mark Price 저장됨: {}", fundingRateDTO);
+            logger.info("🔄 Mark Price 저장됨");
         } catch (Exception e) {
             logger.error("❌ Mark Price 저장 오류: ", e);
         }

@@ -18,7 +18,7 @@ spring:
       pool-name: binance-websocket  # HikariCP 커넥션 풀 이름
       minimum-idle: 10  # 최소 유지 커넥션 개수
       maximum-pool-size: 50  # 최대 커넥션 개수
-      connection-timeout: 5000  # 커넥션 획득 타임아웃 (5초)
+      connection-timeout: 30000  # 커넥션 획득 타임아웃 (30초)
       max-lifetime: 1800000  # 커넥션 재생성 주기(30분)
       idle-timeout: 600000    # 10분 이상 유휴 상태인 커넥션 반납
 

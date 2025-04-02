@@ -71,7 +71,8 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter-webflux:3.4.3")
 
-    runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.1.119.Final")
+    // MacOS Silicon 라이브러리 누락 문제
+    runtimeOnly 'io.netty:netty-resolver-dns-native-macos:4.1.104.Final:osx-aarch_64'
 
 }
 

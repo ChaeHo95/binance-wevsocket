@@ -2,13 +2,16 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.binancewebsocket.mapper.BinanceTakerBuySellVolumeMapper">
 
-    <insert id="insertTakerBuySellVolume" parameterType="com.example.binancewebsocket.dto.BinanceTakerBuySellVolumeDTO">
-        INSERT INTO binance_taker_buy_sell_volume (symbol, buy_sell_ratio, buy_volume, sell_volume, time_stamp)
-        VALUES (#{symbol}, #{buySellRatio}, #{buyVolume}, #{sellVolume}, #{timestamp}) ON DUPLICATE KEY
-        UPDATE
-            buy_sell_ratio =
-        VALUES (buy_sell_ratio), buy_volume =
-        VALUES (buy_volume), sell_volume =
-        VALUES (sell_volume);
+    <insert id="insertTakerBuySellVolumeBatch">
+        INSERT INTO binance_taker_buy_sell_volume
+        (symbol, buy_sell_ratio, buy_volume, sell_volume, time_stamp)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.symbol}, #{item.buySellRatio}, #{item.buyVolume}, #{item.sellVolume}, #{item.timestamp})
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        buy_sell_ratio = VALUES(buy_sell_ratio),
+        buy_volume = VALUES(buy_volume),
+        sell_volume = VALUES(sell_volume)
     </insert>
 </mapper>

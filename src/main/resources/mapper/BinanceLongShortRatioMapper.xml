@@ -2,15 +2,18 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.binancewebsocket.mapper.BinanceLongShortRatioMapper">
 
-    <insert id="insertLongShortRatio" parameterType="com.example.binancewebsocket.dto.BinanceLongShortRatioDTO">
-        INSERT INTO binance_long_short_ratio (symbol, long_short_ratio, long_account_ratio, short_account_ratio,
-                                              time_stamp)
-        VALUES (#{symbol}, #{longShortRatio}, #{longAccountRatio}, #{shortAccountRatio}, #{timestamp}) ON DUPLICATE KEY
-        UPDATE
-            long_short_ratio =
-        VALUES (long_short_ratio), long_account_ratio =
-        VALUES (long_account_ratio), short_account_ratio =
-        VALUES (short_account_ratio);
+    <insert id="insertLongShortRatioBatch">
+        INSERT INTO binance_long_short_ratio
+        (symbol, long_short_ratio, long_account_ratio, short_account_ratio, time_stamp)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.symbol}, #{item.longShortRatio}, #{item.longAccountRatio}, #{item.shortAccountRatio},
+            #{item.timestamp})
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        long_short_ratio = VALUES(long_short_ratio),
+        long_account_ratio = VALUES(long_account_ratio),
+        short_account_ratio = VALUES(short_account_ratio)
     </insert>
 
 </mapper>

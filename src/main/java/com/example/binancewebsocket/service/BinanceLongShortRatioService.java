@@ -48,7 +48,7 @@ public class BinanceLongShortRatioService {
                     .block();
 
             if (response != null && !response.isEmpty()) {
-                response.forEach(mapper::insertLongShortRatio);
+                mapper.insertLongShortRatioBatch(response);
                 logger.info("Successfully saved {} Long/Short Ratio records for {}", response.size(), symbol);
             } else {
                 logger.warn("No Long/Short Ratio data retrieved from Binance API for {}", symbol);

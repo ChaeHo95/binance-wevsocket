@@ -50,7 +50,7 @@ public class BinanceTakerBuySellVolumeService {
                 dto.setSymbol(symbol);
             }
             if (response != null && !response.isEmpty()) {
-                response.forEach(mapper::insertTakerBuySellVolume);
+                mapper.insertTakerBuySellVolumeBatch(response);
                 logger.info("Successfully saved {} Taker Buy/Sell Volume records", response.size());
             } else {
                 logger.warn("No Taker Buy/Sell Volume data retrieved from Binance API for {}", symbol);

@@ -2,13 +2,15 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.binancewebsocket.mapper.BinanceOpenInterestStatisticsMapper">
 
-    <insert id="insertOpenInterestStatistics"
-            parameterType="com.example.binancewebsocket.dto.BinanceOpenInterestStatisticsDto">
-        INSERT INTO binance_open_interest_statistics (symbol, sum_open_interest, sum_open_interest_value, time_stamp)
-        VALUES (#{symbol}, #{sumOpenInterest}, #{sumOpenInterestValue}, #{timestamp}) ON DUPLICATE KEY
-        UPDATE
-            sum_open_interest =
-        VALUES (sum_open_interest), sum_open_interest_value =
-        VALUES (sum_open_interest_value);
+    <insert id="insertOpenInterestStatisticsBatch">
+        INSERT INTO binance_open_interest_statistics
+        (symbol, sum_open_interest, sum_open_interest_value, time_stamp)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.symbol}, #{item.sumOpenInterest}, #{item.sumOpenInterestValue}, #{item.timestamp})
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        sum_open_interest = VALUES(sum_open_interest),
+        sum_open_interest_value = VALUES(sum_open_interest_value)
     </insert>
 </mapper>

@@ -49,7 +49,7 @@ public class BinanceOpenInterestStatisticsService {
                     .block();
 
             if (response != null && !response.isEmpty()) {
-                response.forEach(mapper::insertOpenInterestStatistics);
+                mapper.insertOpenInterestStatisticsBatch(response);
                 logger.info("Successfully saved {} Open Interest Statistics records", response.size());
             } else {
                 logger.warn("No Open Interest Statistics data retrieved from Binance API for {}", symbol);

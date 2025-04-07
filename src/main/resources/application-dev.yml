@@ -21,7 +21,9 @@ spring:
       connection-timeout: 30000  # 커넥션 획득 타임아웃 (30초)
       max-lifetime: 1800000  # 커넥션 재생성 주기(30분)
       idle-timeout: 600000    # 10분 이상 유휴 상태인 커넥션 반납
-
+      allow-pool-suspension: true
+      register-mbeans: true
+      leak-detection-threshold: 30000
   logging:
     level:
       root: INFO  # 기본 로그 레벨 (DEBUG, INFO, WARN, ERROR)

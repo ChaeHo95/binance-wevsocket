@@ -3,19 +3,30 @@ package com.example.binancewebsocket.service;
 import com.example.binancewebsocket.config.BinanceConfig;
 import com.example.binancewebsocket.dto.BinanceOpenInterestDto;
 import com.example.binancewebsocket.mapper.BinanceOpenInterestMapper;
+import io.netty.channel.ChannelOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.netty.http.client.HttpClient;
+
+import java.time.Duration;
 
 @Service
 public class BinanceOpenInterestService {
 
     private Logger logger = LoggerFactory.getLogger(BinanceOpenInterestService.class);
-    private final BinanceOpenInterestMapper mapper;
-    private final WebClient webClient = WebClient.create();
+    private BinanceOpenInterestMapper mapper;
+    private WebClient webClient = WebClient.builder()
+            .clientConnector(new ReactorClientHttpConnector(
+                    HttpClient.create()
+                            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
+                            .responseTimeout(Duration.ofSeconds(10))
+            ))
+            .build();
     private BinanceConfig binanceConfig;
 
     @Autowired

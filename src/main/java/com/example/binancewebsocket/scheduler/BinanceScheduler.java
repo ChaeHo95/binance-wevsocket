@@ -71,7 +71,8 @@ public class BinanceScheduler {
                     corePoolSize,
                     maxPoolSize,
                     60L, TimeUnit.SECONDS,
-                    new LinkedBlockingQueue<>()
+                    new LinkedBlockingQueue<>(1000), // 큐 크기 제한
+                    new ThreadPoolExecutor.CallerRunsPolicy() // 큐 초과 시 직접 실행
             );
             logger.info("Executor 생성 완료 - corePoolSize: {}, maxPoolSize: {}", corePoolSize, maxPoolSize);
 
@@ -130,6 +131,7 @@ public class BinanceScheduler {
                     }
                 }
             }
+
         }, executor); // 동일한 executor 사용
     }
 

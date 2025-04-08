@@ -195,14 +195,14 @@ public class BinanceScheduler {
     // Open Interest
     @Scheduled(fixedRate = OPEN_INTEREST_RATE_SECONDS, timeUnit = TimeUnit.SECONDS, initialDelay = 4000)
     public void fetchOpenInterest() {
-        // logger.debug("Open Interest 데이터 가져오기 시작..."); // 빈번하므로 DEBUG 레벨 고려
+        logger.info("Open Interest 데이터 가져오기 시작..."); // 빈번하므로 DEBUG 레벨 고려
         List<String> currentSymbols = symbolsRef.get();
         currentSymbols.forEach(symbol ->
                 fetchDataWithRetry(symbol, "OpenInterest", () ->
                         binanceOpenInterestService.fetchAndSaveOpenInterest(symbol)
                 )
         );
-        // logger.debug("Open Interest 데이터 가져오기 요청 완료 ({} symbols).", currentSymbols.size());
+        logger.info("Open Interest 데이터 가져오기 요청 완료 ({} symbols).", currentSymbols.size());
     }
 
     // 스프링 Bean 종료 시 ExecutorService 종료 처리

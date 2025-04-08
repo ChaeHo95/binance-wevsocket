@@ -25,55 +25,67 @@ repositories {
 
 dependencies {
     // ✅ Spring Boot 기본 스타터 패키지
-    implementation("org.springframework.boot:spring-boot-starter-web") // 웹 애플리케이션 개발용
-    implementation("org.springframework.boot:spring-boot-starter-security") // Spring Security (인증 및 인가)
-    implementation("org.springframework.boot:spring-boot-starter-actuator") // 애플리케이션 모니터링 (Actuator)
+    implementation("org.springframework.boot:spring-boot-starter-web") // 웹 애플리케이션 개발(MVC, 내장 Tomcat 등)을 위한 기본 스타터
+    implementation("org.springframework.boot:spring-boot-starter-security") // 스프링 시큐리티: 인증 및 인가 기능 제공
+    implementation("org.springframework.boot:spring-boot-starter-actuator") // 애플리케이션 모니터링 및 관리 기능 (헬스 체크, 메트릭 등)
 
     // ✅ 환경 변수 관리
-    implementation("io.github.cdimascio:dotenv-java:3.0.0") // `.env` 파일을 통해 환경 변수 로드
+    implementation("io.github.cdimascio:dotenv-java:3.0.0") // `.env` 파일을 로드하여 환경 변수처럼 사용 가능하게 함
 
     // ✅ MyBatis (SQL 매퍼)
-    implementation("org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4")
-    implementation 'junit:junit:4.13.1'
+    implementation("org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4") // MyBatis와 스프링 부트 연동 지원
+    implementation("junit:junit:4.13.1")
+    // JUnit 4 라이브러리 (참고: spring-boot-starter-test는 JUnit 5를 포함하므로, 특정 이유가 없다면 중복될 수 있음)
 
-    // ✅ MySQL 드라이버 (정확한 최신 버전 사용)
-    runtimeOnly("mysql:mysql-connector-java:8.0.33")
+    // ✅ MySQL 데이터베이스 드라이버
+    runtimeOnly("mysql:mysql-connector-java:8.0.33") // MySQL JDBC 드라이버 (실행 시 필요)
 
     // ✅ Swagger (SpringDoc OpenAPI) - API 문서 자동 생성
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
+    // SpringDoc OpenAPI: REST API 문서를 자동으로 생성하고 Swagger UI 제공
 
-    // ✅ Gson (JSON 직렬화/역직렬화)
-    implementation("com.google.code.gson:gson:2.10.1")
+    // ✅ Gson (JSON 처리 라이브러리)
+    implementation("com.google.code.gson:gson:2.10.1") // Google Gson: JSON 데이터를 자바 객체로 또는 그 반대로 변환
 
-    // ✅ Hibernate Validator & Jakarta Validation (Bean Validation 지원)
-    implementation("org.hibernate.validator:hibernate-validator:8.0.1.Final") // Hibernate Validator (Java Bean 검증)
-    implementation("jakarta.validation:jakarta.validation-api:3.0.2") // Jakarta Validation API (검증 인터페이스)
+    // ✅ Hibernate Validator & Jakarta Validation (데이터 유효성 검증)
+    implementation("org.hibernate.validator:hibernate-validator:8.0.1.Final")
+    // Hibernate Validator: 자바 빈 유효성 검증 구현체 (@NotNull, @Size 등)
+    implementation("jakarta.validation:jakarta.validation-api:3.0.2") // Jakarta Bean Validation API: 유효성 검증 관련 표준 인터페이스
 
-    // ✅ Lombok (코드 간소화 - Getter, Setter, Builder 자동 생성)
-    compileOnly("org.projectlombok:lombok")
-    annotationProcessor("org.projectlombok:lombok")
+    // ✅ Lombok (코드 간소화)
+    compileOnly("org.projectlombok:lombok") // Lombok: 어노테이션으로 Getter, Setter, 생성자 등 보일러플레이트 코드 자동 생성 (컴파일 시 필요)
+    annotationProcessor("org.projectlombok:lombok") // Lombok 어노테이션 프로세서 (컴파일 시 코드 생성)
 
     // ✅ 개발 환경 지원
-    developmentOnly("org.springframework.boot:spring-boot-devtools") // 개발 도중 자동 재시작 지원
+    developmentOnly("org.springframework.boot:spring-boot-devtools") // 스프링 부트 개발 도구: 코드 변경 시 자동 재시작 등 개발 편의 기능 제공
 
     // ✅ 테스트 관련 의존성
-    testImplementation("org.springframework.boot:spring-boot-starter-test") // JUnit 및 Mocking 지원
-    testImplementation("org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4") // MyBatis 테스트 지원
-    testImplementation("org.springframework.security:spring-security-test") // Security 관련 테스트 지원
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    // 스프링 부트 테스트 기본 스타터 (JUnit 5, Mockito, AssertJ 등 포함)
+    testImplementation("org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4") // MyBatis 관련 테스트 코드 작성 지원
+    testImplementation("org.springframework.security:spring-security-test") // 스프링 시큐리티 관련 테스트 코드 작성 지원
 
     // ✅ Binance WebSocket을 위한 추가 의존성
-    implementation("org.springframework.boot:spring-boot-starter-websocket") // Spring Boot WebSocket 지원
-    implementation("com.fasterxml.jackson.core:jackson-databind") // JSON 파싱
-    implementation("org.java-websocket:Java-WebSocket:1.5.3") // WebSocket 클라이언트 라이브러리
+    implementation("org.springframework.boot:spring-boot-starter-websocket") // 스프링 부트 웹소켓 기능 지원 (서버 측 구현 시 주로 사용)
+    implementation("com.fasterxml.jackson.core:jackson-databind")
+    // Jackson Databind: JSON 데이터 처리 (스프링 부트 기본 JSON 라이브러리)
+    implementation("org.java-websocket:Java-WebSocket:1.5.3") // Java-WebSocket: 순수 자바 기반의 웹소켓 클라이언트 구현 라이브러리
 
-    // ✅ Protocol Buffer (protobuf-java) 의존성 추가 (Spring AI Gemini 사용에 필요)
-    implementation("com.google.protobuf:protobuf-java:4.29.3")
+    // ✅ Protocol Buffer (데이터 직렬화)
+    implementation("com.google.protobuf:protobuf-java:4.29.3") // Google Protocol Buffers 자바 라이브러리 (구조화된 데이터 직렬화)
 
+    // ✅ Spring WebFlux (리액티브 웹 스택)
     implementation("org.springframework.boot:spring-boot-starter-webflux:3.4.3")
+    // 스프링 웹플럭스: 비동기/논블로킹 리액티브 웹 개발 지원 (Netty 기반)
+    // (참고: starter-web(MVC)과 함께 사용 시 의존성 및 동작 방식 주의 필요)
 
-    // MacOS Silicon 라이브러리 누락 문제
-    runtimeOnly 'io.netty:netty-resolver-dns-native-macos:4.1.104.Final:osx-aarch_64'
+    // ✅ Netty 네이티브 라이브러리 (macOS Apple Silicon 용)
+    runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.1.104.Final:osx-aarch_64")
+    // WebFlux/Netty 사용 시 macOS 환경(Apple Silicon)에서 DNS 관련 네이티브 라이브러리 누락 문제 해결
 
+    // ✅ Spring Retry (재시도 로직 지원)
+    implementation("org.springframework.retry:spring-retry:2.0.11")
+    // Spring Retry: @Retryable 어노테이션 등을 통해 선언적으로 재시도 로직 구현 지원
 }
 
 

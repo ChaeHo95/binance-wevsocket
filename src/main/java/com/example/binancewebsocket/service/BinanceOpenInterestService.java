@@ -7,8 +7,12 @@ import io.netty.channel.ChannelOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.netty.http.client.HttpClient;
@@ -36,6 +40,10 @@ public class BinanceOpenInterestService {
         this.mapper = mapper;
     }
 
+    // 트랜잭션 적용
+    @Transactional
+    // 데드락 발생 시 최대 3번, 10초 간격으로 재시도
+    @Retryable(retryFor = DeadlockLoserDataAccessException.class, maxAttempts = 3, backoff = @Backoff(delay = 10000))
     public void fetchAndSaveOpenInterest(String symbol) {
         try {
             String url = String.format("%s/fapi/v1/openInterest?symbol=%s",

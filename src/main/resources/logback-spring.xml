@@ -7,14 +7,19 @@
     <!-- 로그 폴더 자동 생성 옵션 추가 -->
     <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener"/>
 
-    <!-- 콘솔 출력 설정 -->
+    <!-- 콘솔 출력 설정 (INFO 이상만 출력, DEBUG는 제외) -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>DEBUG</level>
+            <onMatch>DENY</onMatch>
+            <onMismatch>NEUTRAL</onMismatch>
+        </filter>
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <!-- 전체 로그를 저장하는 파일 -->
+    <!-- 전체 로그를 저장하는 파일 (INFO 이상) -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender" mkdirs="true">
         <file>${LOG_PATH}/application.log</file>
         <encoder>
@@ -43,13 +48,31 @@
         </filter>
     </appender>
 
-    <!-- 로그 레벨 설정 -->
-    <root level="INFO">
+    <!-- DEBUG 로그만 별도로 저장하는 Appender -->
+    <appender name="DEBUG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender" mkdirs="true">
+        <file>${LOG_PATH}/debug.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/debug.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>0</maxHistory>
+        </rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>DEBUG</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!-- Root Logger 레벨을 DEBUG로 설정 -->
+    <root level="DEBUG">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE"/>
         <appender-ref ref="ERROR_FILE"/>
+        <appender-ref ref="DEBUG_FILE"/>
     </root>
 
-    <!-- 프로젝트 패키지 로그 레벨 설정 -->
-    <logger name="com.example" level="INFO"/>
+    <!-- 특정 패키지에 대한 로그 레벨 설정 (예: com.example 패키지) -->
+    <logger name="com.example" level="DEBUG"/>
 </configuration>

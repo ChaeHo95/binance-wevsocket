@@ -48,22 +48,22 @@
         </filter>
     </appender>
 
-    <!-- DEBUG 로그만 별도로 저장하는 Appender -->
-    <appender name="DEBUG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender" mkdirs="true">
-        <file>${LOG_PATH}/debug.log</file>
-        <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
-        </encoder>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_PATH}/debug.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>0</maxHistory>
-        </rollingPolicy>
-        <filter class="ch.qos.logback.classic.filter.LevelFilter">
-            <level>DEBUG</level>
-            <onMatch>ACCEPT</onMatch>
-            <onMismatch>DENY</onMismatch>
-        </filter>
-    </appender>
+    <!--    &lt;!&ndash; DEBUG 로그만 별도로 저장하는 Appender &ndash;&gt;-->
+    <!--    <appender name="DEBUG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender" mkdirs="true">-->
+    <!--        <file>${LOG_PATH}/debug.log</file>-->
+    <!--        <encoder>-->
+    <!--            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>-->
+    <!--        </encoder>-->
+    <!--        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">-->
+    <!--            <fileNamePattern>${LOG_PATH}/debug.%d{yyyy-MM-dd}.log</fileNamePattern>-->
+    <!--            <maxHistory>0</maxHistory>-->
+    <!--        </rollingPolicy>-->
+    <!--        <filter class="ch.qos.logback.classic.filter.LevelFilter">-->
+    <!--            <level>DEBUG</level>-->
+    <!--            <onMatch>ACCEPT</onMatch>-->
+    <!--            <onMismatch>DENY</onMismatch>-->
+    <!--        </filter>-->
+    <!--    </appender>-->
 
     <!-- Root Logger 레벨을 DEBUG로 설정 -->
     <root level="DEBUG">

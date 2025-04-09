@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.net.URI;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
@@ -45,6 +46,9 @@ public class BinanceWebSocketClient extends WebSocketClient {
     private final int MAX_RECONNECT_ATTEMPTS = 10; // 최대 재연결 시도 횟수
     private final long BASE_RECONNECT_DELAY_MS = TimeUnit.SECONDS.toMillis(5); // 기본 재연결 대기 시간 (5초)
     private final long MAX_RECONNECT_DELAY_MS = TimeUnit.SECONDS.toMillis(30); // 최대 재연결 대기 시간 (30초)
+
+    private final int CLOSE_TIMEOUT_SECONDS = 5; // WebSocket 종료 대기 시간 (초)
+    private final int SCHEDULER_TERMINATION_TIMEOUT_SECONDS = 5; // 스케줄러 종료 대기 시간 (초)
 
     // 재연결 시도 횟수 (스레드 안전하게 관리)
     private final AtomicInteger reconnectAttempt = new AtomicInteger(0);
@@ -395,13 +399,17 @@ public class BinanceWebSocketClient extends WebSocketClient {
             logger.info("🛑 재연결 스케줄러 종료 시도...");
             reconnectScheduler.shutdown(); // 새 작업 예약 중단
             try {
-                // 기존 작업 완료 대기 (짧은 시간)
-                if (!reconnectScheduler.awaitTermination(1, TimeUnit.SECONDS)) {
-                    logger.warn("재연결 스케줄러가 1초 내에 정상 종료되지 않아 강제 종료(shutdownNow) 시도...");
-                    reconnectScheduler.shutdownNow(); // 실행 중 작업 인터럽트 시도
-                    // 강제 종료 후 대기
+                // 기존 작업 완료 대기 (설정된 시간)
+                logger.info("재연결 스케줄러 종료 대기 시작 (최대 {}초)", SCHEDULER_TERMINATION_TIMEOUT_SECONDS);
+                if (!reconnectScheduler.awaitTermination(SCHEDULER_TERMINATION_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+                    logger.warn("재연결 스케줄러가 {}초 내에 정상 종료되지 않아 강제 종료(shutdownNow) 시도...", SCHEDULER_TERMINATION_TIMEOUT_SECONDS);
+                    List<Runnable> droppedTasks = reconnectScheduler.shutdownNow(); // 실행 중 작업 인터럽트 시도
+                    logger.warn("강제 종료로 인해 {}개의 대기 중 작업이 취소되었습니다.", droppedTasks.size());
+                    // 강제 종료 후 다시 짧게 대기
                     if (!reconnectScheduler.awaitTermination(1, TimeUnit.SECONDS)) {
                         logger.error("재연결 스케줄러가 강제 종료 후에도 1초 내에 완전히 종료되지 않음.");
+                    } else {
+                        logger.info("재연결 스케줄러 강제 종료 성공.");
                     }
                 } else {
                     logger.info("재연결 스케줄러가 성공적으로 종료되었습니다.");
@@ -410,6 +418,13 @@ public class BinanceWebSocketClient extends WebSocketClient {
                 logger.error("재연결 스케줄러 종료 대기 중 인터럽트 발생. 즉시 강제 종료.", ie);
                 reconnectScheduler.shutdownNow();
                 Thread.currentThread().interrupt();
+            } finally {
+                // 최종 상태 로깅
+                if (reconnectScheduler.isTerminated()) {
+                    logger.info("재연결 스케줄러 최종 상태: Terminated");
+                } else {
+                    logger.warn("재연결 스케줄러 최종 상태: Not Terminated");
+                }
             }
         } else {
             logger.info("재연결 스케줄러가 이미 종료되었거나 null입니다.");
@@ -423,23 +438,35 @@ public class BinanceWebSocketClient extends WebSocketClient {
     @PreDestroy // 스프링 컨텍스트가 직접 관리할 경우에도 대비
     public synchronized void destroy() {
         logger.info("BinanceWebSocketClient 리소스 정리 시작 (destroy 호출됨)...");
-        shutdownScheduler(); // 스케줄러 종료
+
+        // 1. 스케줄러 종료 (먼저 실행하여 추가적인 재연결 시도 방지)
+        shutdownScheduler();
+
+        // 2. WebSocket 연결 종료 (closeBlocking 대신 close 사용)
         if (isOpen()) {
-            logger.info("WebSocket 연결 종료 시도...");
+            logger.info("WebSocket 연결 종료 시도 (최대 {}초 대기)...", CLOSE_TIMEOUT_SECONDS);
             try {
-                // closeBlocking()으로 동기적 종료 시도 (타임아웃 설정 가능)
-                this.closeBlocking();
-                logger.info("WebSocket 연결 종료 완료.");
-            } catch (InterruptedException e) {
-                logger.error("WebSocket 연결 종료(closeBlocking) 대기 중 인터럽트 발생", e);
-                Thread.currentThread().interrupt();
+                // close()는 즉시 리턴할 수 있으므로, 실제 종료 확인은 onClose 콜백에서 처리되거나
+                // 라이브러리가 내부적으로 처리합니다.
+                // 여기서는 명시적으로 종료 명령만 내립니다.
+                this.close();
+
+                // 만약 `close()` 호출 후 일정 시간 내에 `onClose`가 호출되지 않는 경우를 대비하여
+                // 강제로 리소스를 정리해야 할 수도 있지만, 우선 `close()` 호출로 개선합니다.
+                // 필요하다면, CountDownLatch 등을 사용하여 onClose 호출을 기다리는 로직 추가 가능.
+                logger.info("WebSocket 종료 명령 전송 완료. (실제 종료는 비동기적으로 처리될 수 있음)");
+
+            } catch (WebsocketNotConnectedException e) {
+                logger.warn("WebSocket 종료 시도 시 이미 연결되지 않은 상태: {}", e.getMessage());
             } catch (Exception e) {
-                logger.error("WebSocket 연결 종료 중 오류 발생", e);
+                // close() 자체에서 발생하는 예외 처리 (라이브러리 구현에 따라 다름)
+                logger.error("WebSocket 종료 명령 전송 중 오류 발생", e);
             }
         } else {
             logger.info("WebSocket이 이미 닫혀있거나 연결된 적 없음.");
         }
         logger.info("BinanceWebSocketClient 리소스 정리 완료.");
+
     }
 
     /**

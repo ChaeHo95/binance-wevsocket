@@ -24,13 +24,14 @@ import java.util.concurrent.atomic.AtomicReference;
 @ConditionalOnProperty(name = "enable.binance.scheduling", havingValue = "true")
 public class BinanceScheduler {
 
-    private static final Logger logger = LoggerFactory.getLogger(BinanceScheduler.class);
-    private static final int API_CALL_TYPES = 4; // 호출하는 API 종류 개수
-    private static final int MAX_RETRIES = 3;
-    private static final int RETRY_DELAY_SECONDS = 5;
-
-    private static final long SCHEDULE_RATE_MINUTES = 25; // 분 단위 스케줄 주기 (Taker Volume, Long/Short, OI Stats)
-    private static final long OPEN_INTEREST_RATE_SECONDS = 10; // 초 단위 스케줄 주기 (Open Interest) - **주의: 빈번한 호출은 API 제한 및 부하 유발 가능**
+    private final Logger logger = LoggerFactory.getLogger(BinanceScheduler.class);
+    private final int API_CALL_TYPES = 4; // 호출하는 API 종류 개수
+    private final int MAX_RETRIES = 3;
+    private final int RETRY_DELAY_SECONDS = 5;
+    // 25분 = 1,500,000 밀리초
+    private final long SCHEDULE_RATE_MS_LITERAL = 1500000L;
+    // 10초 = 10,000 밀리초
+    private final long OPEN_INTEREST_RATE_MS_LITERAL = 10000L;
 
     @Autowired
     private BinanceLongShortRatioService binanceLongShortRatioService;
@@ -154,7 +155,7 @@ public class BinanceScheduler {
     // --- 스케줄링된 데이터 가져오기 메소드들 (상수 사용) ---
 
     // Taker Buy/Sell Volume
-    @Scheduled(fixedRate = SCHEDULE_RATE_MINUTES, timeUnit = TimeUnit.MINUTES, initialDelay = 1000)
+    @Scheduled(fixedRate = SCHEDULE_RATE_MS_LITERAL, initialDelay = 1000)
     public void fetchTakerBuySellVolume() {
         logger.info("Taker Buy/Sell Volume 데이터 가져오기 시작...");
         List<String> currentSymbols = symbolsRef.get();
@@ -167,7 +168,7 @@ public class BinanceScheduler {
     }
 
     // Long/Short Ratio
-    @Scheduled(fixedRate = SCHEDULE_RATE_MINUTES, timeUnit = TimeUnit.MINUTES, initialDelay = 2000)
+    @Scheduled(fixedRate = SCHEDULE_RATE_MS_LITERAL, initialDelay = 2000)
     public void fetchLongShortRatio() {
         logger.info("Long/Short Ratio 데이터 가져오기 시작...");
         List<String> currentSymbols = symbolsRef.get();
@@ -180,7 +181,7 @@ public class BinanceScheduler {
     }
 
     // Open Interest Statistics
-    @Scheduled(fixedRate = SCHEDULE_RATE_MINUTES, timeUnit = TimeUnit.MINUTES, initialDelay = 3000)
+    @Scheduled(fixedRate = SCHEDULE_RATE_MS_LITERAL, initialDelay = 3000)
     public void fetchOpenInterestStatistics() {
         logger.info("Open Interest Statistics 데이터 가져오기 시작...");
         List<String> currentSymbols = symbolsRef.get();
@@ -193,7 +194,7 @@ public class BinanceScheduler {
     }
 
     // Open Interest
-    @Scheduled(fixedRate = OPEN_INTEREST_RATE_SECONDS, timeUnit = TimeUnit.SECONDS, initialDelay = 4000)
+    @Scheduled(fixedRate = OPEN_INTEREST_RATE_MS_LITERAL, initialDelay = 4000)
     public void fetchOpenInterest() {
         logger.info("Open Interest 데이터 가져오기 시작..."); // 빈번하므로 DEBUG 레벨 고려
         List<String> currentSymbols = symbolsRef.get();
